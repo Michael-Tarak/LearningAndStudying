@@ -123,7 +123,7 @@ namespace Encryption3
                     }
                     if (keyAppendable.Length > inputText.Length)
                     {
-                        keyAppendable.Remove(inputText.Length, keyAppendable.Length % inputText.Length);
+                        keyAppendable.Remove(inputText.Length, keyAppendable.Length - inputText.Length);
                     }
                     var step = new int[keyAppendable.Length];
                     for (int i = 0; i < step.Length; i++)
