@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace DESEncryption
 {
@@ -56,24 +55,81 @@ namespace DESEncryption
                 { 2, 1, 14, 7, 4, 10, 8, 13, 15, 12, 9, 0, 3, 5, 6, 11 }
             },
         };
+        public string Encrypt(string binaryText, string binaryKey)
+        {
+            var encodedText = IPFirst(binaryText);
+        }
 
-    public static string Round(string textBinary, bool isDecryption = false)
+        public static string Round(string textBinary, string roundKey, bool isDecryption = false)
         {
             string leftPart;
             string rightPart;
             if (isDecryption)
             {
                 leftPart = textBinary.Substring(32);
-                rightPart=  textBinary.Substring(0, 32);
+                rightPart = textBinary.Substring(0, 32);
             }
             else
             {
                 leftPart = textBinary.Substring(0, 32);
                 rightPart = textBinary.Substring(32);
             }
+
+            return rightPart + XOR(leftPart, FeistelFunction(rightPart,));
         }
-        public static string KeyGenerator (int roundNumber, string inputKey) //first round is 0
+        public static string [] RoundKeysGenerator(string inputKey)
         {
+            string[] keyCheckExtd = { "", "", "", "", "", "", "", "" }; //8
+            var byteLength = 0;
+            for (int i = 0; i < keyCheckExtd.Length; i++)
+            {
+                keyCheckExtd[i] = inputKey.Substring(byteLength, 7);
+                if ((NumberOneCounter(keyCheckExtd[i]) % 2) == 0)
+                {
+                    keyCheckExtd[i] = keyCheckExtd[i].Insert(0, "1");
+                }
+                else
+                {
+                    keyCheckExtd[i] = keyCheckExtd[i].Insert(0, "0");
+                }
+                byteLength += 7;
+            }
+
+            var keyCheckExtdFull = "";
+            for (int i = 0; i < keyCheckExtd.Length; i++)
+            {
+                keyCheckExtdFull += keyCheckExtd[i];
+            }
+
+            string[] cI = new string[17];
+            string[] dI = new string[17];
+            (cI[0], dI[0]) = ZeroCAndDGenerator(keyCheckExtdFull);
+            for (int j = 1; j < cI.Length; j++) //j=0 for C0 and D0
+            {
+                int shiftMove;
+                if (j == 1 || j == 2 || j == 9 || j == 16)
+                {
+                    shiftMove = 1;
+                }
+                else
+                {
+                    shiftMove = 2;
+                }
+                for (int i = 0; i < 28; i++)
+                {
+                    cI[j] += cI[j-1][(i + shiftMove) % 28];
+                    dI[j] += dI[j-1][(i + shiftMove) % 28];
+                }
+            }
+
+            string[] result = new string[16];
+            for (int i = 0; i < result.Length; i++)
+            {
+                result[i] = PBox(cI[i + 1] + dI[i + 1]);
+            }
+
+            return result;
+
             string PBox(string input)
             {
                 var result = "";
@@ -205,57 +261,30 @@ namespace DESEncryption
                 return (outputC, outputD);
             }
 
-            int shiftMove;
-            if (roundNumber == 0 || roundNumber == 1 || roundNumber == 8 || roundNumber == 15)
-            {
-                shiftMove = 1;
-            }
-            else
-            {
-                shiftMove = 2;
-            }
-
-            string [] keyCheckExtd = {"","","","","","","",""}; //8
-            var byteLength = 0;
-            for (int i = 0; i < keyCheckExtd.Length; i++)
-            {
-                keyCheckExtd[i] = inputKey.Substring(byteLength, 7);
-                if ((NumberOneCounter(keyCheckExtd[i]) % 2) == 0)
-                {
-                    keyCheckExtd[i].Insert(0, "1");
-                }
-                else
-                {
-                    keyCheckExtd[i].Insert(0, "0");
-                }
-                byteLength += 7;
-            }
-
-            var keyCheckExtdFull = "";
-            for (int i = 0; i < keyCheckExtd.Length; i++)
-            {
-                keyCheckExtdFull += keyCheckExtd[i];
-            }
-
-            string CZero;
-            string DZero;
-            (CZero, DZero) = ZeroCAndDGenerator(keyCheckExtdFull);
-
-            var CI = "";
-            var DI = "";
-            for (int i = 0; i < 28; i++)
-            {
-                CI += CZero[(i + shiftMove) % 28];
-                DI += DZero[(i + shiftMove) % 28];
-            }
-
-            return PBox(CI + DI);
         }
         public static string FeistelFunction(string inputRightSide, string roundKey)
         {
-            string PBox(string input)
+            var pBoxBefore = PBoxOfExntention(inputRightSide);
+            var xored = "";
+            for (int i = 0; i < 48; i++)
             {
-                var result ="";
+                xored += XOR(pBoxBefore[i], roundKey[i]);
+            }
+
+            return DirectPBox(
+                SBoxing(new string[]
+                {
+                    xored.Substring(0, 6), xored.Substring(6, 6),
+                    xored.Substring(12, 6), xored.Substring(18, 6),
+                    xored.Substring(24, 6), xored.Substring(30, 6),
+                    xored.Substring(36, 6), xored.Substring(42, 6)
+                }
+                )
+            );
+
+            string PBoxOfExntention(string input)
+            {
+                var result = "";
                 result += input[31];
                 result += input[0];
                 result += input[1];
@@ -306,14 +335,57 @@ namespace DESEncryption
                 result += input[0];
                 return result;
             }
-            var pBox = PBox(inputRightSide);
-
-            var xored = "";
-            for (int i = 0; i < 48; i++)
+            string SBoxing(string[] input)
             {
-                xored += XOR(pBox[i], roundKey[i]);
+                var result = "";
+                for (int i = 0; i < input.Length; i++)
+                {
+                    result += DecimalToBinar(sBoxes[i]
+                        [
+                            BinarToDecimal(input[i][0].ToString() + input[i][input[i].Length - 1].ToString()) - 1,
+                            BinarToDecimal(input[i].Substring(1, 4)) - 1
+                        ]);
+                }
+                return result;
             }
+            string DirectPBox(string input)
+            {
+                var result = "";
+                result += input[15];
+                result += input[6];
+                result += input[19];
+                result += input[20];
+                result += input[28];
+                result += input[11];
+                result += input[27];
+                result += input[16];
+                result += input[0];
+                result += input[14];
+                result += input[22];
+                result += input[25];
+                result += input[4];
+                result += input[17];
+                result += input[30];
+                result += input[9];
+                result += input[1];
+                result += input[7];
+                result += input[23];
+                result += input[13];
+                result += input[31];
+                result += input[26];
+                result += input[2];
+                result += input[8];
+                result += input[18];
+                result += input[12];
+                result += input[29];
+                result += input[5];
+                result += input[21];
+                result += input[10];
+                result += input[3];
+                result += input[24];
 
+                return result;
+            }
         }
         public static string IPFirst(string inputBlock)
         {
@@ -454,9 +526,9 @@ namespace DESEncryption
             return result;
         }
 
-        public static string XOR (char firstOperand, char secondOperand)
+        public static string XOR(char firstOperand, char secondOperand)
         {
-            if(firstOperand == secondOperand)
+            if (firstOperand == secondOperand)
             {
                 return "0";
             }
@@ -464,6 +536,49 @@ namespace DESEncryption
             {
                 return "1";
             }
+        }
+        public static string XOR(string firstOperand, string secondOperand)
+        {
+            var result = "";
+            for (int i = 0; i < firstOperand.Length; i++)
+            {
+                if (firstOperand[i] == secondOperand[i])
+                {
+                    result += "0";
+                }
+                else
+                {
+                    result += "1";
+                }
+            }
+            return result;
+        }
+        public static string DecimalToBinar(int decimalNumber)
+        {
+            string result = "";
+            while (decimalNumber > 0)
+            {
+
+                if (result.Length < 1)
+                {
+                    result += (decimalNumber % 2).ToString();
+                }
+                else
+                {
+                    result = result.Insert(0, (decimalNumber % 2).ToString());
+                }
+                decimalNumber /= 2;
+            }
+            return result;
+        }
+        public static int BinarToDecimal(string binarString)
+        {
+            int result = 0;
+            for (int i = 0; i < binarString.Length; i++)
+            {
+                result += int.Parse(binarString[i].ToString()) * Convert.ToInt32(Math.Pow(2, binarString.Length - i - 1));
+            }
+            return result;
         }
     }
 }
