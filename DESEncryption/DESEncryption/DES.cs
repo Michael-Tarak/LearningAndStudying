@@ -63,30 +63,176 @@ namespace DESEncryption
             }
             var result = "";
             var blockCounter = 0;
-            for (int i = 0; i < binaryText.Length; i++)
+            while (blockCounter < binaryText.Length)
             {
-                var tempText = IPFirst(binaryText.Substring(blockCounter,64));
+                var tempText = IPFirst(binaryText.Substring(blockCounter, 64));
                 var generatedRoundKey = RoundKeysGenerator(binaryKey);
                 for (int j = 0; j < 16; j++)
                 {
                     tempText = Round(tempText, generatedRoundKey[j], j + 1);
                 }
                 result += IPLast(tempText);
+                blockCounter += 64;
             }
 
             return result;
         }
         public static string Decrypt(string binaryText, string binaryKey)
         {
-            var tempText = IPFirst(binaryText);
-            var generatedRoundKey = RoundKeysGenerator(binaryKey);
-            for (int i = 0; i < 16; i++)
+            while (binaryText.Length % 64 != 0)
             {
-                tempText = Round(tempText, generatedRoundKey[15-i], i+1);
+                binaryText += "0";
             }
-            return IPLast(tempText);
+            var result = "";
+            var blockCounter = 0;
+            while (blockCounter < binaryText.Length)
+            {
+                var tempText = IPFirst(binaryText.Substring(blockCounter, 64));
+                var generatedRoundKey = RoundKeysGenerator(binaryKey);
+                for (int j = 0; j < 16; j++)
+                {
+                    tempText = Round(tempText, generatedRoundKey[15-j], j + 1);
+                }
+                result += IPLast(tempText);
+                blockCounter += 64;
+            }
+            return result;
         }
-        private static string Round(string textBinary, string roundKey,int roundNumber)
+        public static string XOR(char firstOperand, char secondOperand)
+        {
+            if (firstOperand == secondOperand)
+            {
+                return "0";
+            }
+            else
+            {
+                return "1";
+            }
+        }
+        public static string XOR(string firstOperand, string secondOperand)
+        {
+            var result = "";
+            for (int i = 0; i < firstOperand.Length; i++)
+            {
+                if (firstOperand[i] == secondOperand[i])
+                {
+                    result += "0";
+                }
+                else
+                {
+                    result += "1";
+                }
+            }
+            return result;
+        }
+        public static string DecimalToBinar(int decimalNumber)
+        {
+            string result = "";
+            while (decimalNumber > 0)
+            {
+
+                if (result.Length < 1)
+                {
+                    result += (decimalNumber % 2).ToString();
+                }
+                else
+                {
+                    result = result.Insert(0, (decimalNumber % 2).ToString());
+                }
+                decimalNumber /= 2;
+            }
+            return result;
+        }
+        public static int BinarToDecimal(string binarString)
+        {
+            int result = 0;
+            for (int i = 0; i < binarString.Length; i++)
+            {
+                result += int.Parse(binarString[i].ToString()) * Convert.ToInt32(Math.Pow(2, binarString.Length - i - 1));
+            }
+            return result;
+        }
+        public static string BinarToHex(string binarString)
+        {
+            while (binarString.Length % 4 !=0)
+            {
+                binarString = binarString.Insert(0, "0");
+            }
+            var result = "";
+            var counter = 0;
+            while (counter <binarString.Length)
+            {
+                var binarPiece = binarString.Substring(counter, 4);
+                if (binarPiece == "0000")
+                {
+                    result += "0";
+                }
+                else if (binarPiece == "0001")
+                {
+                    result += "1";
+                }
+                else if (binarPiece == "0010")
+                {
+                    result += "2";
+                }
+                else if (binarPiece == "0011")
+                {
+                    result += "3";
+                }
+                else if (binarPiece == "0100")
+                {
+                    result += "4";
+                }
+                else if (binarPiece == "0101")
+                {
+                    result += "5";
+                }
+                else if (binarPiece == "0110")
+                {
+                    result += "6";
+                }
+                else if (binarPiece == "0111")
+                {
+                    result += "7";
+                }
+                else if (binarPiece == "1000")
+                {
+                    result += "8";
+                }
+                else if (binarPiece == "1001")
+                {
+                    result += "9";
+                }
+                else if (binarPiece == "1010")
+                {
+                    result += "A";
+                }
+                else if (binarPiece == "1011")
+                {
+                    result += "B";
+                }
+                else if (binarPiece == "1100")
+                {
+                    result += "C";
+                }
+                else if (binarPiece == "1101")
+                {
+                    result += "D";
+                }
+                else if (binarPiece == "1110")
+                {
+                    result += "E";
+                }
+                else if (binarPiece == "1111")
+                {
+                    result += "F";
+                }
+                counter += 4;
+            }
+            return result;
+        }
+
+        private static string Round(string textBinary, string roundKey, int roundNumber)
         {
             var leftPart = textBinary.Substring(0, 32);
             var rightPart = textBinary.Substring(32);
@@ -97,7 +243,7 @@ namespace DESEncryption
             return rightPart + XOR(leftPart, FeistelFunction(rightPart, roundKey));
 
         }
-        private static string [] RoundKeysGenerator(string inputKey)
+        private static string[] RoundKeysGenerator(string inputKey)
         {
             var keyCheckExtdFull = "";
             if (inputKey.Length == 56)
@@ -118,7 +264,7 @@ namespace DESEncryption
                     byteLength += 7;
                 }
 
-                
+
                 for (int i = 0; i < keyCheckExtd.Length; i++)
                 {
                     keyCheckExtdFull += keyCheckExtd[i];
@@ -128,7 +274,7 @@ namespace DESEncryption
             {
                 keyCheckExtdFull = inputKey;
             }
-            
+
 
             string[] cI = new string[17];
             string[] dI = new string[17];
@@ -146,8 +292,8 @@ namespace DESEncryption
                 }
                 for (int i = 0; i < 28; i++)
                 {
-                    cI[j] += cI[j-1][(i + shiftMove) % 28];
-                    dI[j] += dI[j-1][(i + shiftMove) % 28];
+                    cI[j] += cI[j - 1][(i + shiftMove) % 28];
+                    dI[j] += dI[j - 1][(i + shiftMove) % 28];
                 }
             }
 
@@ -374,7 +520,7 @@ namespace DESEncryption
                             BinarToDecimal(input[i][0].ToString() + input[i][input[i].Length - 1].ToString()),
                             BinarToDecimal(input[i].Substring(1, 4))
                         ]);
-                    while(binarSmall.Length<4)
+                    while (binarSmall.Length < 4)
                     {
                         binarSmall = binarSmall.Insert(0, "0");
                     }
@@ -560,134 +706,5 @@ namespace DESEncryption
             return result;
         }
 
-        public static string XOR(char firstOperand, char secondOperand)
-        {
-            if (firstOperand == secondOperand)
-            {
-                return "0";
-            }
-            else
-            {
-                return "1";
-            }
-        }
-        public static string XOR(string firstOperand, string secondOperand)
-        {
-            var result = "";
-            for (int i = 0; i < firstOperand.Length; i++)
-            {
-                if (firstOperand[i] == secondOperand[i])
-                {
-                    result += "0";
-                }
-                else
-                {
-                    result += "1";
-                }
-            }
-            return result;
-        }
-        public static string DecimalToBinar(int decimalNumber)
-        {
-            string result = "";
-            while (decimalNumber > 0)
-            {
-
-                if (result.Length < 1)
-                {
-                    result += (decimalNumber % 2).ToString();
-                }
-                else
-                {
-                    result = result.Insert(0, (decimalNumber % 2).ToString());
-                }
-                decimalNumber /= 2;
-            }
-            return result;
-        }
-        public static int BinarToDecimal(string binarString)
-        {
-            int result = 0;
-            for (int i = 0; i < binarString.Length; i++)
-            {
-                result += int.Parse(binarString[i].ToString()) * Convert.ToInt32(Math.Pow(2, binarString.Length - i - 1));
-            }
-            return result;
-        }
-        public static string BinarToHex(string binarString)
-        {
-            var result = "";
-            var counter = 0;
-            while (counter <binarString.Length)
-            {
-                var binarPiece = binarString.Substring(counter, 4);
-                if (binarPiece == "0000")
-                {
-                    result += "0";
-                }
-                else if (binarPiece == "0001")
-                {
-                    result += "1";
-                }
-                else if (binarPiece == "0010")
-                {
-                    result += "2";
-                }
-                else if (binarPiece == "0011")
-                {
-                    result += "3";
-                }
-                else if (binarPiece == "0100")
-                {
-                    result += "4";
-                }
-                else if (binarPiece == "0101")
-                {
-                    result += "5";
-                }
-                else if (binarPiece == "0110")
-                {
-                    result += "6";
-                }
-                else if (binarPiece == "0111")
-                {
-                    result += "7";
-                }
-                else if (binarPiece == "1000")
-                {
-                    result += "8";
-                }
-                else if (binarPiece == "1001")
-                {
-                    result += "9";
-                }
-                else if (binarPiece == "1010")
-                {
-                    result += "A";
-                }
-                else if (binarPiece == "1011")
-                {
-                    result += "B";
-                }
-                else if (binarPiece == "1100")
-                {
-                    result += "C";
-                }
-                else if (binarPiece == "1101")
-                {
-                    result += "D";
-                }
-                else if (binarPiece == "1110")
-                {
-                    result += "E";
-                }
-                else if (binarPiece == "1111")
-                {
-                    result += "F";
-                }
-                counter += 4;
-            }
-            return result;
-        }
     }
 }
