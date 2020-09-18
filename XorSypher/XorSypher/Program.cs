@@ -100,12 +100,10 @@ namespace XorSypher
                 while (gammaMarker < binarTextXORResult.Length)
                 {
                     var pieceOfXOR = binarTextXORResult.Substring(gammaMarker, alphabetSymbolEncodingLength);
-                    //Console.Write(pieceOfXOR);
                     for (int i = 0; i < gammedAlphabet.Length; i++)
                     {
                         if (pieceOfXOR.Equals(gammedAlphabet[i]))
                         {
-                            //Console.WriteLine(symbolAlphabet[i]);
                             outputText += symbolAlphabet[i];
                             break;
                         }
