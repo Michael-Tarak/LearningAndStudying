@@ -32,9 +32,9 @@ namespace RSAEncryption
                 }
                 return (dSecret, moduleN);
             }
-            catch (Exception)
+            catch (ArgumentException)
             {
-                return (0, 0);
+                return (-1, -1);
             }
         }
 
