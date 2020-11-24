@@ -12,7 +12,7 @@ namespace VigenereCrack
             Console.InputEncoding = Encoding.Unicode;
             Console.OutputEncoding = Encoding.Unicode;
             string encodedText = "";
-            double englishIoC = 0.065;
+            var englishIoC = 0.065;
 
             while (true)
             {
@@ -54,7 +54,6 @@ namespace VigenereCrack
             {
                 filteredText += text[symbolCutterPosition];
             }
-            //Console.WriteLine(filteredText);
 
             double textLength = filteredText.Length;
             var aCount = Convert.ToDouble(filteredText.Count(a => a == 'a'));

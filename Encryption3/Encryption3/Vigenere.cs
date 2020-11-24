@@ -2,7 +2,7 @@
 {
     static class Vigenere
     {
-        private static readonly string alphabet = "abcdefghijklmnopqrstuvwxyz0123456789.,!@#$%^&*()_+=-{}[]<>?;:";
+        private static readonly string alphabet = "abcdefghijklmnopqrstuvwxyz";
 
         public static string Alphabet => alphabet;
         public static string Encrypt(string text, string key, string alphabet, bool isDecryption = false)
