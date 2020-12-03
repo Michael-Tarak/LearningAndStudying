@@ -35,6 +35,9 @@
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.lblTimeElapsed = new System.Windows.Forms.Label();
+            this.lblFilesFoundOfTotal = new System.Windows.Forms.Label();
+            this.lblCurrentDirectory = new System.Windows.Forms.Label();
+            this.btnCancel = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // txtDirectoryPath
@@ -52,7 +55,7 @@
             this.btnSearch.TabIndex = 1;
             this.btnSearch.Text = "Поиск";
             this.btnSearch.UseVisualStyleBackColor = true;
-            this.btnSearch.Click += new System.EventHandler(this.btnSearch_Click);
+            this.btnSearch.Click += new System.EventHandler(this.BtnSearch_Click);
             // 
             // txtSearchWord
             // 
@@ -67,6 +70,7 @@
             this.treeView1.Name = "treeView1";
             this.treeView1.Size = new System.Drawing.Size(249, 396);
             this.treeView1.TabIndex = 3;
+            this.treeView1.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.TreeView1_AfterSelect);
             // 
             // label1
             // 
@@ -96,11 +100,42 @@
             this.lblTimeElapsed.Text = "Затрачено времени: 0 сек";
             this.lblTimeElapsed.UseMnemonic = false;
             // 
+            // lblFilesFoundOfTotal
+            // 
+            this.lblFilesFoundOfTotal.AutoSize = true;
+            this.lblFilesFoundOfTotal.Location = new System.Drawing.Point(263, 101);
+            this.lblFilesFoundOfTotal.Name = "lblFilesFoundOfTotal";
+            this.lblFilesFoundOfTotal.Size = new System.Drawing.Size(90, 15);
+            this.lblFilesFoundOfTotal.TabIndex = 11;
+            this.lblFilesFoundOfTotal.Text = "Начните поиск";
+            // 
+            // lblCurrentDirectory
+            // 
+            this.lblCurrentDirectory.AutoSize = true;
+            this.lblCurrentDirectory.Location = new System.Drawing.Point(263, 125);
+            this.lblCurrentDirectory.Name = "lblCurrentDirectory";
+            this.lblCurrentDirectory.Size = new System.Drawing.Size(16, 15);
+            this.lblCurrentDirectory.TabIndex = 12;
+            this.lblCurrentDirectory.Text = "...";
+            // 
+            // btnCancel
+            // 
+            this.btnCancel.Location = new System.Drawing.Point(263, 156);
+            this.btnCancel.Name = "btnCancel";
+            this.btnCancel.Size = new System.Drawing.Size(110, 23);
+            this.btnCancel.TabIndex = 13;
+            this.btnCancel.Text = "Отмена";
+            this.btnCancel.UseVisualStyleBackColor = true;
+            this.btnCancel.Click += new System.EventHandler(this.BtnCancel_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(476, 472);
+            this.Controls.Add(this.btnCancel);
+            this.Controls.Add(this.lblCurrentDirectory);
+            this.Controls.Add(this.lblFilesFoundOfTotal);
             this.Controls.Add(this.lblTimeElapsed);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
@@ -125,6 +160,9 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label lblTimeElapsed;
+        private System.Windows.Forms.Label lblFilesFoundOfTotal;
+        private System.Windows.Forms.Label lblCurrentDirectory;
+        private System.Windows.Forms.Button btnCancel;
     }
 }
 
